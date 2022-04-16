@@ -6,9 +6,10 @@ void main() {
   runApp(Pokego());
 }
 
-List<String> list = ['test'];
-List<String> buyList = ['3'];
-List<String> sellList = ['5'];
+List<String>? _list = ['カード名'];
+List<String>? _buyList = ['買い,'];
+List<String>? _sellList = ['売り'];
+
 
 class Pokego extends StatelessWidget {
   @override
@@ -29,6 +30,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyApp extends State<MyApp> {
+  @override
+  void initState()
+  {
+    _getSetting();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,57 +66,60 @@ class _MyApp extends State<MyApp> {
             if (getselltext != null) {
               if (getselltext == String) getselltext = getselltext.toString();
               setState(() {
-                sellList.add(getselltext);
+                _sellList!.add(getselltext);
               });
-            }
+            } 
 
             if (getbuytext != null) {
               if (getbuytext == String) getbuytext = getbuytext.toString();
               setState(() {
-                buyList.add(getbuytext + ',');
+                _buyList!.add(getbuytext + ',');
               });
-            }
+            } 
 
             if (gettext != null) {
               setState(() {
-                list.add(gettext);
+                _list!.add(gettext);
               });
-            }
+            } 
           },
           child: Icon(Icons.add),
         ),
         body: Container(
-            child: ListView.builder(
-                itemCount: list.length,
-                itemBuilder: (context, index) {
-                  final text = list[index];
-                  return Dismissible(
-                    key: Key(text),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: Colors.black38),
+            child: (_list?.length != null)
+                ? ListView.builder(
+                    itemCount: _list!.length,
+                    itemBuilder: (context, index) {
+                      final text = _list![index];
+                      return Dismissible(
+                        key: Key(text),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.black38),
+                            ),
+                          ),
+                          child: ListTile(
+                            title: Text(_list![index]),
+                            trailing: Wrap(
+                              children: <Widget>[
+                                Text(_buyList![index].toString()),
+                                Text(_sellList![index].toString()),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      child: ListTile(
-                        title: Text(list[index]),
-                        trailing: Wrap(
-                          children: <Widget>[
-                            Text(buyList[index]),
-                            Text(sellList[index]),
-                          ],
-                        ),
-                      ),
-                    ),
-                    onDismissed: (direction) {
-                      setState(() {
-                        list.removeAt(index);
-                        buyList.removeAt(index);
-                        sellList.removeAt(index);
-                      });
-                    },
-                  );
-                }))
+                        onDismissed: (direction) {
+                          setState(() {
+                            _list!.removeAt(index);
+                            _buyList!.removeAt(index);
+                            _sellList!.removeAt(index);
+                            _saveSetting();
+                          });
+                        },
+                      );
+                    })
+                : Container())
         // ],
         );
   }
@@ -150,7 +160,7 @@ class _Todopage extends State<Todopage> {
                 // リスト追加ボタン
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(_text);
+                    if (_text != '') Navigator.of(context).pop(_text);
                   },
                   child: Text('リスト追加', style: TextStyle(color: Colors.white)),
                 ),
@@ -164,7 +174,13 @@ class _Todopage extends State<Todopage> {
                     // ボタンをクリックした時の処理
                     onPressed: () {
                       // "pop"で前の画面に戻る
-                      Navigator.of(context).pop(_text);
+                      setState(() {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) {
+                            return MyApp();
+                          }),
+                        );
+                      });
                     },
                     child: Text('キャンセル')),
               ),
@@ -210,7 +226,9 @@ class _Todobuypage extends State<Todobuypage> {
                 // リスト追加ボタン
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(_text);
+                    if (_text != '') {
+                      Navigator.of(context).pop(_text);
+                    }
                   },
                   child: Text('リスト追加', style: TextStyle(color: Colors.white)),
                 ),
@@ -223,8 +241,13 @@ class _Todobuypage extends State<Todobuypage> {
                 child: TextButton(
                     // ボタンをクリックした時の処理
                     onPressed: () {
-                      // "pop"で前の画面に戻る
-                      Navigator.of(context).pop(_text);
+                      setState(() {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) {
+                            return MyApp();
+                          }),
+                        );
+                      });
                     },
                     child: Text('キャンセル')),
               ),
@@ -270,7 +293,10 @@ class _Todosellpage extends State<Todosellpage> {
                 // リスト追加ボタン
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(_text);
+                    if (_text != '') Navigator.of(context).pop(_text);
+                    setState(() {
+                      _saveSetting();
+                    });
                   },
                   child: Text('リスト追加', style: TextStyle(color: Colors.white)),
                 ),
@@ -283,8 +309,13 @@ class _Todosellpage extends State<Todosellpage> {
                 child: TextButton(
                     // ボタンをクリックした時の処理
                     onPressed: () {
-                      // "pop"で前の画面に戻る
-                      Navigator.of(context).pop(_text);
+                      setState(() {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) {
+                            return MyApp();
+                          }),
+                        );
+                      });
                     },
                     child: Text('キャンセル')),
               ),
@@ -292,4 +323,18 @@ class _Todosellpage extends State<Todosellpage> {
       ),
     );
   }
+}
+
+  void _saveSetting() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setStringList('list', _list!);
+    pref.setStringList('listbuy', _buyList!);
+    pref.setStringList('listsell', _sellList!);
+  }
+
+void _getSetting() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    _list = pref.getStringList('list') ?? [];
+    _buyList = pref.getStringList('listbuy') ?? [];
+    _sellList = pref.getStringList('listsell') ?? [];
 }
